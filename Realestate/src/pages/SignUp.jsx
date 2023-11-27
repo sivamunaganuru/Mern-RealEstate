@@ -1,7 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import axios from 'axios';
+import { object, string,ref } from 'yup';
+import { useNavigate } from 'react-router-dom';
+import Spinner from '../components/Spinner';
+import OAuth from '../components/OAuth';
+
+const formValidation = object({
+  username: string().required('Username is required'),
+  email: string().email().required('Email is required'),
+  password: string().required('Password is required').min(8, 'Password must be at least 8 characters'),
+  confirmPassword: string().required('Confirm Password is required')
+  .oneOf([ref('password'), null], 'Passwords must match')
+})
+
 
 const SignUp = () => {
 
@@ -12,27 +25,84 @@ const SignUp = () => {
     confirmPassword: ''
   })
 
+  const [errors, setErrors] = useState({});//{username: 'Username is required', email: 'Email is required'}
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   if(loading){
+  //       dispatch(validationFailure());
+  //   }
+  // }
+  // ,[]);
+
   const handleFormChange = (e) => {
     const key = e.target.id;
     const value = e.target.value;
-    setForm({...form, [key]: value})
+    const updatedForm = { ...form, [key]: value };
+    setForm(updatedForm);
+
+    // Validate the field immediately after change
+    formValidation.validateAt(key, updatedForm)
+    .then(() => {
+      // If field is valid, clear errors for this field
+      setErrors({ ...errors, [key]: '' });
+    })
+    .catch(err => {
+      // Show error message for this field
+      setErrors({ ...errors, [key]: err.errors[0] });
+    });
   }
+
+  // Function to check if there are any errors
+  const hasErrors = () => {
+    return Object.keys(errors).filter(key => key !== 'message').some(key => errors[key] !== '');
+  };
+ 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios({
-      method : 'POST',
-      url: '/api/signup',
-      data: {
-        username: form.username,
-        email: form.email,
-        password: form.password
-      }
-    }).then((res) => {
-      console.log(res.data);
-    }).catch((err) => {
-      console.log(err);
+    setIsLoading(true);
+    formValidation.validate(form,{abortEarly:false}).then(() => {
+      console.log('Valid');
+      axios({
+        method : 'POST',
+        url: '/api/signup',
+        data: {
+          username: form.username,
+          email: form.email,
+          password: form.password
+        }
+        }).then((res) => {
+          setErrors({});//{username: 'Username is required', email: 'Email is required'}
+          setForm({
+            username: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          })
+          console.log(res.data);
+          setIsLoading(false);
+          setTimeout((navigate('/sign-in')), 2000);
+        }).catch((err) => {
+          
+          console.log(err.response.data);
+          setErrors({message: err.response.data.message});
+          setIsLoading(false);
+        })
+    }
+    ).catch((err) => {
+      // console.log(err.inner);
+      const errors = err.inner;
+      const errorsObj = {};
+      errors.map((error) => {
+        errorsObj[error.path] = error.message;
+      })
+      setErrors(errorsObj);
+      setIsLoading(false);
     })
+
+    
   }
 
   return (
@@ -40,16 +110,73 @@ const SignUp = () => {
       <h1 className='text-3xl text-center font-semibold my-3'>Sign Up</h1>
 
       <form className='flex flex-col items-center'>
-        <input id='username' className='border border-gray-400 w-80 p-2 my-2 rounded-lg'
-         type='text' placeholder='Username' value={form.username} onChange={handleFormChange}/>
-        <input id='email' className='border border-gray-400 w-80 p-2 my-2 rounded-lg'
-         type='email' placeholder='Email' value={form.email} onChange={handleFormChange}/>
-        <input id='password' className='border border-gray-400 w-80 p-2 my-2 rounded-lg'
-         type='password' placeholder='Password' value={form.password} onChange={handleFormChange}/>
-        <input id='confirmPassword' className='border border-gray-400 w-80 p-2 my-2 rounded-lg'
-         type='password' placeholder='Confirm Password' value={form.confirmPassword} onChange={handleFormChange}/>
+        
+        <div className="mb-4">
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            Username
+          </label>
+          <input 
+            id='username' 
+            className='border border-gray-400 w-full min-w-[20rem] p-2 rounded-lg'
+            type='text' 
+            placeholder='Username' 
+            value={form.username} 
+            onChange={handleFormChange}
+          />
+          <p className='text-red-500 text-sm'>{errors.username}</p>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            email
+          </label>
+          <input 
+            id='email' 
+            className='border border-gray-400 w-full min-w-[20rem] p-2 rounded-lg'
+            type='email' 
+            placeholder='email' 
+            value={form.email} 
+            onChange={handleFormChange}
+          />
+          <p className='text-red-500 text-sm'>{errors.email}</p>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            password
+          </label>
+          <input 
+            id='password' 
+            className='border border-gray-400 w-full min-w-[20rem] p-2 rounded-lg'
+            type='password' 
+            placeholder='password' 
+            value={form.password} 
+            onChange={handleFormChange}
+          />
+          <p className='text-red-500 text-sm'>{errors.password}</p>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            confirmPassword
+          </label>
+          <input 
+            id='confirmPassword' 
+            className='border border-gray-400 w-full min-w-[20rem] p-2 rounded-lg'
+            type='password' 
+            placeholder='confirmPassword' 
+            value={form.confirmPassword} 
+            onChange={handleFormChange}
+          />
+          <p className='text-red-500 text-sm'>{errors.confirmPassword}</p>
+        </div>
+  
         <button className='border border-gray-400 w-80 p-2 my-2 bg-slate-700 text-white font-bold rounded-lg
-        hover:opacity-90 disabled:opacity-70' onClick={handleSubmit}>Sign Up</button>
+        hover:opacity-90 disabled:opacity-70' onClick={handleSubmit} disabled={hasErrors() || isLoading}>
+        {isLoading ? <Spinner /> : 'Sign Up'}
+        </button>
+        <p className='text-red-500 text-sm'>{errors.message}</p>
+        <OAuth />
       </form>
 
       <div className='flex justify-center gap-2 mt-3'>
@@ -60,5 +187,6 @@ const SignUp = () => {
     </div>
   )
 }
+
 
 export default SignUp
