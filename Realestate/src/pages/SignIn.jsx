@@ -8,6 +8,7 @@ import Spinner from '../components/Spinner';
 import { useDispatch,useSelector } from 'react-redux';
 import { signInSuccess,signInFailure,signInRequest,validationFailure } from '../redux/userSlice';
 import OAuth from '../components/OAuth';
+import { toast } from 'react-toastify';
 
 const credentialsValidation = object({
   email: string().email().required('Email is required'),
@@ -93,10 +94,25 @@ const SignIn = () => {
         return Object.keys(errors).filter(key => key !== 'message').some(key => errors[key] !== '');
   };
 
+  useEffect(() => {
+    if (apierror) {
+      toast.error(apierror, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+  }, [apierror]); // This effect will run when apierror changes
+
   return (
 
       <div className='p-5 max-w-lg mx-auto'>
-        <h1 className='text-3xl text-center font-semibold my-3'>Sign Up</h1>
+        <h1 className='text-3xl text-center font-semibold my-3'>Sign In</h1>
 
         <form className='flex flex-col items-center'>
           <div className="mb-4">
@@ -134,7 +150,7 @@ const SignIn = () => {
           {loading ? <Spinner /> : 'Sign In'}
           </button>
           <OAuth />
-          <p className='text-red-500 text-sm'>{apierror}</p>
+          {/* <p className='text-red-500 text-sm'>{apierror}</p> */}
         </form>
         <div className='flex justify-center gap-2 mt-3'>
           <p>Don't have an account?</p>

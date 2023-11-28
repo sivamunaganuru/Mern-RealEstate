@@ -6,6 +6,8 @@ import { object, string,ref } from 'yup';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import OAuth from '../components/OAuth';
+import { useDispatch,useSelector } from 'react-redux';
+import { signInFailure,signInRequest,validationFailure } from '../redux/userSlice';
 
 const formValidation = object({
   username: string().required('Username is required'),
@@ -28,13 +30,15 @@ const SignUp = () => {
   const [errors, setErrors] = useState({});//{username: 'Username is required', email: 'Email is required'}
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const {loading, apierror} = useSelector(state => state.user);
+  const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   if(loading){
-  //       dispatch(validationFailure());
-  //   }
-  // }
-  // ,[]);
+  useEffect(() => {
+    if(loading || apierror){
+        dispatch(validationFailure());
+    }
+  }
+  ,[]);
 
   const handleFormChange = (e) => {
     const key = e.target.id;
@@ -56,15 +60,15 @@ const SignUp = () => {
 
   // Function to check if there are any errors
   const hasErrors = () => {
-    return Object.keys(errors).filter(key => key !== 'message').some(key => errors[key] !== '');
+    return Object.values(errors).some(err => err !== '');
   };
  
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    dispatch(signInRequest());
     formValidation.validate(form,{abortEarly:false}).then(() => {
-      console.log('Valid');
+
       axios({
         method : 'POST',
         url: '/api/signup',
@@ -81,14 +85,13 @@ const SignUp = () => {
             password: '',
             confirmPassword: ''
           })
-          console.log(res.data);
-          setIsLoading(false);
+          dispatch(validationFailure());
           setTimeout((navigate('/sign-in')), 2000);
         }).catch((err) => {
           
-          console.log(err.response.data);
-          setErrors({message: err.response.data.message});
-          setIsLoading(false);
+          // console.log(err.response.data);
+          // setErrors({message: err.response.data.message});
+          dispatch(signInFailure(err.response.data.message || 'Something went wrong'));
         })
     }
     ).catch((err) => {
@@ -99,7 +102,7 @@ const SignUp = () => {
         errorsObj[error.path] = error.message;
       })
       setErrors(errorsObj);
-      setIsLoading(false);
+      dispatch(validationFailure());
     })
 
     
@@ -172,10 +175,10 @@ const SignUp = () => {
         </div>
   
         <button className='border border-gray-400 w-80 p-2 my-2 bg-slate-700 text-white font-bold rounded-lg
-        hover:opacity-90 disabled:opacity-70' onClick={handleSubmit} disabled={hasErrors() || isLoading}>
-        {isLoading ? <Spinner /> : 'Sign Up'}
+        hover:opacity-90 disabled:opacity-70' onClick={handleSubmit} disabled={hasErrors() || loading}>
+        {loading ? <Spinner /> : 'Sign Up'}
         </button>
-        <p className='text-red-500 text-sm'>{errors.message}</p>
+        <p className='text-red-500 text-sm'>{apierror}</p>
         <OAuth />
       </form>
 
