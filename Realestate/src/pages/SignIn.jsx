@@ -6,7 +6,7 @@ import { object, string,ref } from 'yup';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import { useDispatch,useSelector } from 'react-redux';
-import { signInSuccess,signInFailure,signInRequest,validationFailure } from '../redux/userSlice';
+import { signInSuccess,signInFailure,signInRequest,validationFailure,clearOldMessages } from '../redux/userSlice';
 import OAuth from '../components/OAuth';
 import { toast } from 'react-toastify';
 
@@ -27,11 +27,8 @@ const SignIn = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if(loading || apierror){
-        dispatch(validationFailure());
-    }
-  }
-  ,[]);
+    clearOldMessages();
+  },[]);
 
   const handleCredentialsChange = (e) => {
           const key = e.target.id;
@@ -69,7 +66,7 @@ const SignIn = () => {
                 password: '',
               })
               // console.log(res.data);
-              localStorage.setItem('token', res.data.token);
+              // localStorage.setItem('token', res.data.token);
               dispatch(signInSuccess(res.data));
               navigate('/profile');
             }).catch((err) => {

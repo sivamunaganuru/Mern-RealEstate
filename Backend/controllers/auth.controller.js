@@ -38,7 +38,7 @@ const signin = (req, res,next) => {
         })
     }
     catch (error) {
-        next(errorHandler(500,"Internal Server Error"));
+        next(errorHandler(500,"Internal Server Error: Cannot Login"));
     }
 
 }
@@ -70,7 +70,65 @@ const googleSignup = async (req, res,next) => {
         }
 
     }catch(error){
-        next(errorHandler(500,"Internal Server Error"));
+        next(errorHandler(500,"Internal Server Error: Cannot Login with Google"));
     }
 }
-export { signup, signin,googleSignup };
+
+const deleteAccount = async (req, res,next) => {
+    const { id } = req.params;
+    if( id !== req.user.id){
+        return next(errorHandler(401,"Unauthorized User trying to Delete,  Please Login Again"));
+    }
+    console.log(req.params);
+    try{
+        const userdata = await User.findByIdAndDelete(id);
+        res.clearCookie("access_token");
+        res.status(200).json(`${userdata.username} Deleted Successfully`)
+            
+    }
+    catch(error){
+        next(errorHandler(500,"Cannot Delete Account, Please Try Again"));
+    }
+}
+
+const updateAccount = async (req, res,next) => {
+    const { id,username,email,password,avatar } = req.body;
+    if( id !== req.user.id){
+        return next(errorHandler(401,"Unauthorized User, Please Login Again"));
+    }
+    // console.log(req.user);
+    try{
+        const userdata = await User.findById(id);
+        if(userdata){
+            userdata.username = username;
+            userdata.email = email;
+            if (password) {
+                const salt = bcrypt.genSaltSync(10);
+                const hashPassword = bcrypt.hashSync(password, salt);
+                userdata.password = hashPassword;
+            }
+            userdata.avatar = avatar;
+            const updatedUser = await userdata.save();
+            const { password:confidential, ...others } = updatedUser._doc;
+            res.status(200).json(others);
+            
+        }else{
+            return next(errorHandler(404,"User not found"));
+        }
+    }
+    catch(error){
+        console.log(error);
+        next(errorHandler(500,"Internal Server Error: Cannot Update Account"));
+    }
+}
+
+const signout = async (req, res,next) => {
+    try{
+        res.clearCookie("access_token");
+        res.status(200).json("Logged Out Successfully");
+    }
+    catch(error){
+        next(errorHandler(500,"Internal Server Error: Cannot Logout"));
+    }
+}
+export { signup, signin,googleSignup,deleteAccount,updateAccount,signout };

@@ -2,18 +2,16 @@ import React from 'react'
 import { useSelector,useDispatch } from 'react-redux'
 import { useState,useRef,useEffect } from 'react'
 import Spinner from '../components/Spinner'
-import {signInFailure, signOut,profileUpdateSucess, signInRequest} from '../redux/userSlice'
+import {profileUpdatefailure, signOut,profileUpdateSucess, profileUpdateRequest,clearOldMessages} from '../redux/userSlice'
 import {useNavigate} from 'react-router-dom'
 import axios from 'axios'
-import { get, set } from 'mongoose'
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import app from '../firebase';
-import { toast } from 'react-toastify';
-import useErrorToastify from '../customHooks/errorToastify';
-import useSuccessToastify from '../customHooks/successToastify';
+import useErrorToastify from '../customHooks/errorToastify.js';
+import useSuccessToastify from '../customHooks/successToastify.js';
 
 const Profile = () => {
-  const {currentUser,loading,apierror,successMessages} = useSelector(state => state.user);
+  const {currentUser,loading} = useSelector(state => state.user);
   const [userDetails, setUserDetails] = useState({
     email: currentUser.email,
     username: currentUser.username,
@@ -28,6 +26,15 @@ const Profile = () => {
   const [uploadStatus, setUploadStatus] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(null);
 
+  
+
+  useEffect(() => {
+    dispatch(clearOldMessages());
+  },[]);
+
+  useErrorToastify();
+  useSuccessToastify();
+
   const handleUserDetailsChange = (e) => {
     setUserDetails({...userDetails, [e.target.id]: e.target.value})
   }
@@ -38,7 +45,7 @@ const Profile = () => {
     if(userDetails.username === currentUser.username && userDetails.email === currentUser.email && userDetails.password === '' && userDetails.avatar === currentUser.avatar){
       setErrors({email: 'No changes made', username: 'No changes made', password: 'No changes made'});
     }else{
-      dispatch(signInRequest());
+      dispatch(profileUpdateRequest());
       setErrors({email: '', username: '', password: ''});
       axios({
         method: 'PUT',
@@ -56,33 +63,43 @@ const Profile = () => {
         dispatch(profileUpdateSucess(res.data));
       }).catch((err) => {
         console.log(err.response.data);
-        dispatch(signInFailure(err.response.data.message || 'Unable to Update Profile,Try Again'));
+        dispatch(profileUpdatefailure(err.response.data.message || 'Unable to Update Profile,Try Again'));
       })
         
     }
   }
 
   const handleSignOut = () => {
-    dispatch(signOut());
-    navigate('/');
+    try{
+      axios({
+        method: 'GET',
+        url: '/api/signout',
+      }).then((res) => {
+        console.log(res.data);
+        dispatch(signOut());
+        // console.log('Signed Out and Redirecting to Home Page');
+        // console.log(currentUser);
+        // navigate('/');
+      })
+    }
+    catch(err){
+      dispatch(profileUpdatefailure(err.response.data.message || 'Unable to Sign Out,Try Again'));
+    }
   }
   const handleDelete = () => {
     if(window.confirm('Are you sure you want to delete your account?')){
       // Delete account
       axios({
         method: 'DELETE',
-        url: '/api/delete-account',
-        params: {
-          id: currentUser._id
-        }
+        url: `/api/delete-account/${currentUser._id}`,
         
       }).then((res) => {
         console.log(res.data);
         dispatch(signOut());
-        navigate('/');
+        // navigate('/');
       }).catch((err) => {
         console.log(err.response.data);
-        dispatch(signInFailure(err.response.data.message || 'Unable to Delete Account,Try Again'));
+        dispatch(profileUpdatefailure(err.response.data.message || 'Unable to Delete Account,Try Again'));
       })
     }
   }
@@ -121,10 +138,6 @@ const Profile = () => {
   }
   ,[file]);
 
-  useErrorToastify();
-  useSuccessToastify();
-
-  
 
   const uploadingFile = () => {
     if(uploadStatus>0 && uploadStatus<100){
