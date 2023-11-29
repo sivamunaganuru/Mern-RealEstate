@@ -9,6 +9,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import app from '../firebase';
 import useErrorToastify from '../customHooks/errorToastify.js';
 import useSuccessToastify from '../customHooks/successToastify.js';
+import { Link } from 'react-router-dom'
 
 const Profile = () => {
   const {currentUser,loading} = useSelector(state => state.user);
@@ -30,6 +31,7 @@ const Profile = () => {
 
   useEffect(() => {
     dispatch(clearOldMessages());
+    setErrors({email: '', username: '', password: ''});
   },[]);
 
   useErrorToastify();
@@ -210,6 +212,11 @@ const Profile = () => {
           </button>
           {/* <p className='text-red-500 text-sm'>{apierror}</p> */}
           {/* <p className='text-green-500 text-sm'>{successMessages}</p> */}
+          <Link to='/create-listing'>
+          <button className='border border-gray-400 w-80 p-2 my-2 bg-green-700 text-white font-bold rounded-lg
+          uppercase hover:opacity-90 disabled:opacity-70' disabled={loading || uploadingFile()}>
+          create Listing </button>
+          </Link>
           
         </form>
 
