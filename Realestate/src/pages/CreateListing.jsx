@@ -6,7 +6,9 @@ import { useSelector,useDispatch } from 'react-redux'
 import { fileUploading,fileUploadFailure,fileUploadSuccess,clearOldMessages } from '../redux/userSlice';
 import useErrorToastify from '../customHooks/errorToastify.js';
 import useSuccessToastify from '../customHooks/successToastify.js';
-import { set } from 'mongoose';
+import axios from 'axios';
+import Spinner from '../components/Spinner.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const CreateListing = () => {
 
@@ -15,19 +17,20 @@ const CreateListing = () => {
         name    : '',
         description   : '',
         address  : '',
-        regularPrice : 0,
+        regularPrice : 50,
         discountedPrice : 0,
-        bedrooms : 0,
-        bathrooms: 0,
+        bedrooms : 1,
+        bathrooms: 1,
         furnished : false,
         parking : false,
         sell : false,
-        rent : false,
+        rent : true,
         offer :false,
         imageUrls : []
     });
     const {filesuploading,apierror} = useSelector(state => state.user);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         dispatch(clearOldMessages());
@@ -54,6 +57,12 @@ const CreateListing = () => {
             value = e.target.value;
         }
         const updatedForm = { ...form, [key]: value };
+        if (key == "sell" ) {
+            updatedForm.rent = !value;
+        }
+        else if (key == "rent") {
+            updatedForm.sell = !value;
+        }
         setForm(updatedForm);
     }
 
@@ -106,6 +115,55 @@ const CreateListing = () => {
     }
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (form.imageUrls.length == 0) {
+            dispatch(fileUploadFailure("No images selected. Please select atleast one image"));
+            return;
+        }
+        if(form.regularPrice < form.discountedPrice){
+            dispatch(fileUploadFailure("Discounted price cannot be greater than regular price"));
+            return;
+        }
+        dispatch(fileUploading());
+        axios({
+            method: 'POST',
+            url : '/api/listing/create',
+            data : {
+                name : form.name,
+                description : form.description,
+                address : form.address,
+                regularPrice : form.regularPrice,
+                discountedPrice : form.discountedPrice,
+                bedrooms : form.bedrooms,
+                bathrooms : form.bathrooms,
+                furnished : form.furnished,
+                parking : form.parking,
+                type : form.sell ? "sell" : "rent",
+                offer : form.offer,
+                imageUrls : form.imageUrls
+            }
+        }).then((res) => {
+            console.log(res.data);
+            // setForm({
+            //     name    : '',
+            //     description   : '',
+            //     address  : '',
+            //     regularPrice : 50,
+            //     discountedPrice : 50,
+            //     bedrooms : 1,
+            //     bathrooms: 1,
+            //     furnished : false,
+            //     parking : false,
+            //     sell : false,
+            //     rent : true,
+            //     offer :false,
+            //     imageUrls : []
+            // });
+            dispatch(fileUploadSuccess("Listing Created Successfully"));
+            navigate(`/listing/${res.data.listing._id}`);
+        }).catch((err) => {
+            console.log(err.response.data);
+            dispatch(fileUploadFailure(err.response.data.message || 'Unable to Create Listing,Try Again'));
+        })
         
     }
 
@@ -170,23 +228,23 @@ const CreateListing = () => {
 
                 <div className="mb-4 flex flex-wrap gap-4 w-full max-w-md">
                     <div className="flex gap-2">
-                        <input type='checkbox' id='furnished' value={form.furnished} onChange={handleFormChange} />
+                        <input type='checkbox' id='furnished' checked={form.furnished} onChange={handleFormChange} />
                         <label htmlFor="furnished" className=" text-sm font-medium text-gray-700"> Furnished</label>
                     </div>
                     <div className="flex gap-2">
-                        <input type='checkbox' id='parking' value={form.parking} onChange={handleFormChange} />
+                        <input type='checkbox' id='parking' checked={form.parking} onChange={handleFormChange} />
                         <label htmlFor="parking" className="text-sm font-medium text-gray-700"> Parking</label>
                     </div>
                     <div className="flex gap-2">
-                        <input type='checkbox' id='offer' value={form.offer} onChange={handleFormChange} />
+                        <input type='checkbox' id='offer' checked={form.offer} onChange={handleFormChange} />
                         <label htmlFor="offer" className="text-sm font-medium text-gray-700"> Offer</label>
                     </div>
                     <div className="flex gap-2">
-                        <input type='checkbox' id='sell' value={form.sell} onChange={handleFormChange} />
+                        <input type='checkbox' id='sell' checked={form.sell} onChange={handleFormChange} />
                         <label htmlFor="sell" className="text-sm font-medium text-gray-700"> Sell</label>
                     </div>
                     <div className="flex gap-2">
-                        <input type='checkbox' id='rent' value={form.rent} onChange={handleFormChange} />
+                        <input type='checkbox' id='rent' checked={form.rent} onChange={handleFormChange} />
                         <label htmlFor="rent" className="text-sm font-medium text-gray-700"> Rent</label>
                     </div>                    
                 </div>
@@ -233,28 +291,30 @@ const CreateListing = () => {
                         value={form.regularPrice} 
                         onChange={handleFormChange}
                         required
-                        min={0}
+                        min="50"
+                        max="100000000"
                     />
                     <label htmlFor="regularPrice" className="text-sm font-medium text-gray-700 mb-1">
                         Regular Price {form.sell!=true && <span>($/Month)</span>}
                     </label>
                     </div>    
-                    
+                    {form.offer &&
                     <div className="flex gap-2 items-center">
-                    <input 
-                        id='discountedPrice' 
-                        className='p-2 border border-gray-400 rounded-lg'
-                        type='number' 
-                        placeholder="0" 
-                        value={form.discountedPrice} 
-                        onChange={handleFormChange}
-                        required
-                        min={0}
-                    />
-                    <label htmlFor="discoutedPrice" className="text-sm font-medium text-gray-700 mb-1">
-                        Discounted Price {form.sell!=true && <span>($/Month)</span>}
-                    </label>
-                    </div>                 
+                        <input 
+                            id='discountedPrice' 
+                            className='p-2 border border-gray-400 rounded-lg'
+                            type='number' 
+                            placeholder="0" 
+                            value={form.discountedPrice} 
+                            onChange={handleFormChange}
+                            required
+                            min="0"
+                        />
+                        <label htmlFor="discoutedPrice" className="text-sm font-medium text-gray-700 mb-1">
+                            Discounted Price {form.sell!=true && <span>($/Month)</span>}
+                        </label>
+                    </div>
+                    }                 
                 </div>
                 
             </div>
@@ -287,7 +347,7 @@ const CreateListing = () => {
                 <button className="border border-gray-400 p-3 rounded-lg 
                     uppercase bg-slate-700 text-white w-full max-w-md mx-auto
                     hover:opacity-85 disabled:opacity-70" onClick={handleSubmit}
-                    disabled={filesuploading}>Create listing</button>
+                    disabled={filesuploading}>{filesuploading ? <Spinner/> : "Create listing"}</button>
             </div>
             
         </form>    

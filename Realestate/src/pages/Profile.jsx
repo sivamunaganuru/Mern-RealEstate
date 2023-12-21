@@ -26,7 +26,7 @@ const Profile = () => {
   const [file, setFile] = useState(undefined);
   const [uploadStatus, setUploadStatus] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(null);
-
+  const [userListings, setListings] = useState([]);
   
 
   useEffect(() => {
@@ -148,6 +148,34 @@ const Profile = () => {
     return false;
   }
 
+  const handleShowListings = () => {
+    axios({
+      method: 'GET',
+      url: `/api/listing/get-listings/${currentUser._id}`,
+    }).then((res) => {
+      console.log(res.data.listings);
+      setListings(res.data.listings);
+    }).catch((err) => { 
+      console.log(err.response.data);
+      dispatch(profileUpdatefailure(err.response.data.message || 'Unable to get Listings,Try Again'));
+    })
+  }
+
+  const handleDeletelisting = (index) => {
+    axios({
+      method : "DELETE",
+      url : `/api/listing/delete-listing/${userListings[index]._id}`,
+    }).then((res) => {
+      console.log(res.data);
+      setListings(userListings.filter((list,i)=>i!==index));
+    }
+    ).catch((err) => {
+      console.log(err.response.data);
+      dispatch(profileUpdatefailure(err.response.data.message || 'Unable to Delete Listing,Try Again'));
+      
+    })
+  }
+
   return (
     
     <div className='p-5 max-w-lg mx-auto'>
@@ -223,6 +251,31 @@ const Profile = () => {
         <div className='flex justify-around mt-5'>
           <span className='text-red-500 text-sm cursor-pointer hover:underline' onClick={handleDelete}>Delete Account</span>
           <span className='text-red-500 text-sm cursor-pointer  hover:underline' onClick={handleSignOut}>Sign Out</span>
+        </div>
+
+        <div className='my-2 p-2 flex flex-col items-center justify-center gap-2'>
+          <span className='text-green-500 text-sm cursor-pointer hover:underline' onClick={handleShowListings}>Show Listings</span>
+
+          {userListings.length>0 &&(<div className='flex flex-col w-120 gap-2 max-h-80 overflow-y-auto rounded-lg'>
+                        <h1 className='text-center text-2xl py-2 font-bold text-orange-800'>Your Listings </h1>{
+                        userListings.map((list,index) => (
+                        <div className='flex justify-between p-2 gap-3 items-center border border-gray-200' key={index}>
+                            <img src={list.imageUrls[0]} alt='image' className='w-16 h-16 object-contain'/>
+                            <Link to={`/listing/${list._id}`} className='text-slate-700 flex-1 truncate
+                            font-semibold hover:underline '>{list.name}</Link>
+                            <div className='flex flex-col'>
+                              <button className=' text-red-700 underline p-1 rounded-lg uppercase hover:opacity-75'
+                              onClick={()=>handleDeletelisting(index)}>
+                                Delete
+                              </button>
+                              <button className=' text-green-700 underline p-1 rounded-lg uppercase hover:opacity-75'>
+                                Edit
+                              </button>
+                            </div>
+                            </div>)
+                    )}
+                    </div>
+          )}
         </div>
 
     </div>

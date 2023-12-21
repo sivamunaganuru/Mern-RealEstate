@@ -67,7 +67,7 @@ const userSlice = createSlice({
         },
         fileUploadSuccess: (state, action) => {
             state.filesuploading = false;
-            state.successMessages = "Files Uploaded Successfully";
+            state.successMessages = action.payload || "Files Uploaded Successfully" ;
         },
         fileUploadFailure: (state, action) => {
             state.filesuploading = false;
