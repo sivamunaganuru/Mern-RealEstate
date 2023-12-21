@@ -256,7 +256,7 @@ const Profile = () => {
         <div className='my-2 p-2 flex flex-col items-center justify-center gap-2'>
           <span className='text-green-500 text-sm cursor-pointer hover:underline' onClick={handleShowListings}>Show Listings</span>
 
-          {userListings.length>0 &&(<div className='flex flex-col w-120 gap-2 max-h-80 overflow-y-auto rounded-lg'>
+          {userListings.length>0 &&(<div className='flex flex-col w-full gap-2 max-h-80 overflow-y-auto rounded-lg'>
                         <h1 className='text-center text-2xl py-2 font-bold text-orange-800'>Your Listings </h1>{
                         userListings.map((list,index) => (
                         <div className='flex justify-between p-2 gap-3 items-center border border-gray-200' key={index}>
@@ -268,9 +268,9 @@ const Profile = () => {
                               onClick={()=>handleDeletelisting(index)}>
                                 Delete
                               </button>
-                              <button className=' text-green-700 underline p-1 rounded-lg uppercase hover:opacity-75'>
+                              <Link to={`/update-listing/${list._id}`} className=' text-green-700 underline p-1 rounded-lg uppercase hover:opacity-75'>
                                 Edit
-                              </button>
+                              </Link>
                             </div>
                             </div>)
                     )}

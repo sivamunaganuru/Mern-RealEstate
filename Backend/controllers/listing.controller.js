@@ -34,7 +34,7 @@ export const createListing = async (req, res, next) => {
     }
 };
 
-export const getListing = async (req, res, next) => {
+export const getListings = async (req, res, next) => {
     const id = req.params.id;
     if( id !== req.user.id){
         return next(errorHandler(401,"Unauthorized User, you can only view your own listings"));
@@ -71,4 +71,59 @@ export const deleteListing = async (req, res, next) => {
     catch(err){
         next(err);
     }
+}
+
+export const updateListing = async (req, res, next) => {
+    const id = req.params.id;
+    const listing = await Listing.findById(id);
+    if(!listing){
+        return next(errorHandler(404,"Listing not found"));
+    }
+    if(listing.userRef.toString() !== req.user.id){
+        return next(errorHandler(401,"Unauthorized User, you can only update your own listings"));
+    }
+    try{
+        const {name, description, address, regularPrice, discountedPrice, bedrooms, bathrooms,furnished, parking, type, offer, imageUrls} = req.body;
+        const updatedListing = await Listing.findByIdAndUpdate(id,{
+            name,
+            description,
+            address,
+            regularPrice,
+            discountedPrice,
+            bedrooms,
+            bathrooms,
+            furnished,
+            parking,
+            type,
+            offer,
+            imageUrls
+        },{new: true});
+        return res.status(200).json({
+            success: true,
+            message: "Listing updated successfully",
+            listing: updatedListing
+        });
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+export const fetchListing = async (req, res, next) => {
+    const id = req.params.id;
+    const listing = await Listing.findById(id);
+    if(!listing){
+        return next(errorHandler(404,"Listing not found"));
+    }
+    try{
+        return res.status(200).json({
+            success: true,
+            message: "Listing fetched successfully",
+            listing
+        });
+    }
+    catch(err){
+        next(err);
+    }
+
 }
