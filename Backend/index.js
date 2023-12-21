@@ -15,6 +15,14 @@ mongoose.connect(process.env.MONGO, {
     console.log(err);
 });
 
+mongoose.connection.on("error", (err) => {
+    console.log(err);
+});
+
+mongoose.connection.on("disconnected", () => {
+    console.log("MongoDB disconnected");
+});
+
 
 const port = 3000;
 

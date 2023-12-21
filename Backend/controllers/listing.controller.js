@@ -5,10 +5,10 @@ import Listing from "../models/listing.model.js";
 export const createListing = async (req, res, next) => {
 
     try{
-        const {title, description, address, regularPrice, discountedPrice, bedrooms, bathrooms,furnished, parking, type, offer, imageUrls} = req.body;
+        const {name, description, address, regularPrice, discountedPrice, bedrooms, bathrooms,furnished, parking, type, offer, imageUrls} = req.body;
         const userRef = req.user._id;
         const listing = new Listing({
-            title,
+            name,
             description,
             address,
             regularPrice,

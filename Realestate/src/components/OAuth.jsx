@@ -49,6 +49,7 @@ const OAuth = () => {
 
         } catch (error) {
         console.log(error);
+        dispatch(validationFailure());
         }
 
     }

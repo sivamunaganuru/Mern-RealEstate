@@ -28,7 +28,6 @@ const SignUp = () => {
   })
 
   const [errors, setErrors] = useState({});//{username: 'Username is required', email: 'Email is required'}
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const {loading, apierror} = useSelector(state => state.user);
   const dispatch = useDispatch();

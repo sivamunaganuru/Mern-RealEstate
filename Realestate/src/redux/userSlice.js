@@ -4,7 +4,8 @@ const initialState = {
     currentUser: null,
     apierror: null,
     successMessages : null,
-    loading : false,  
+    loading : false,
+    filesuploading : false,  
 }
 
 const userSlice = createSlice({
@@ -15,6 +16,7 @@ const userSlice = createSlice({
             state.apierror = null;
             state.successMessages = null;
             state.loading = false;
+            state.filesuploading = false;
         },
         signInRequest: (state, action) => {
             state.loading = true;
@@ -60,6 +62,17 @@ const userSlice = createSlice({
             state.successMessages = null;
             state.apierror = null;
         },
+        fileUploading: (state, action) => {
+            state.filesuploading = true;
+        },
+        fileUploadSuccess: (state, action) => {
+            state.filesuploading = false;
+            state.successMessages = "Files Uploaded Successfully";
+        },
+        fileUploadFailure: (state, action) => {
+            state.filesuploading = false;
+            state.apierror = action.payload;
+        },
     }
 })
 
@@ -72,5 +85,8 @@ export const { signInRequest
     ,profileUpdateRequest
     ,profileUpdatefailure
     ,clearOldMessages
-    ,clearMessages } = userSlice.actions;
+    ,clearMessages
+    ,fileUploading
+    ,fileUploadSuccess
+    ,fileUploadFailure  } = userSlice.actions;
 export default userSlice.reducer;
