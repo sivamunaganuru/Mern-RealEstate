@@ -34,6 +34,7 @@ export const createListing = async (req, res, next) => {
     }
 };
 
+//user listings
 export const getListings = async (req, res, next) => {
     const id = req.params.id;
     if( id !== req.user.id){
@@ -126,4 +127,55 @@ export const fetchListing = async (req, res, next) => {
         next(err);
     }
 
+}
+
+export const getAllListings = async (req,res,next) => {
+    try{
+        const limit = parseInt(req.query.limit) || 9;
+        const skipindex = parseInt(req.query.startIndex) || 0;
+        let offer = req.query.offer;
+
+        if( offer === undefined || offer === "false"){
+            offer = {$in : [false,true]};
+        }
+
+        let furnished = req.query.furnished;
+        if( furnished === undefined || furnished === "false"){
+            furnished = {$in : [false,true]};
+        }
+
+        let parking = req.query.parking;
+        if( parking === undefined || parking === "false"){
+            parking = {$in : [false,true]};
+        }
+
+        let type = req.query.type;
+        if( type === undefined || type === "all"){
+            type = {$in : ["rent","sale"]};
+        }
+
+        const searchTerm = req.query.searchTerm || "";
+
+        const sort = req.query.sort || "createdAt";
+
+        const order  = req.query.order || "desc";
+
+        const listings = await Listing.find({
+            name : {$regex : searchTerm, $options: "i"},
+            offer,
+            furnished,
+            parking,
+            type,
+        }).sort({[sort]: order}).skip(skipindex).limit(limit);
+
+        return res.status(200).json({
+            success: true,
+            message: "Listings fetched successfully",
+            listings
+        });
+
+    }
+    catch(err){
+        next(err);
+    }
 }
