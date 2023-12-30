@@ -154,6 +154,9 @@ const Profile = () => {
       url: `/api/listing/get-listings/${currentUser._id}`,
     }).then((res) => {
       console.log(res.data.listings);
+      if(res.data.listings.length===0){
+        dispatch(profileUpdatefailure('You have no Listings'));
+      }
       setListings(res.data.listings);
     }).catch((err) => { 
       console.log(err.response.data);

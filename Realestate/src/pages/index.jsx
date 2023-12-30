@@ -8,5 +8,6 @@ import SignUp from "./SignUp";
 import Profile from "./Profile";
 import CreateListing from "./CreateListing";
 import UpdateListing from "./UpdateListing";
+import Listing from "./Listing";
 
-export { Home, About, SignIn, SignUp, Profile,CreateListing,UpdateListing };
+export { Home, About, SignIn, SignUp, Profile,CreateListing,UpdateListing,Listing };

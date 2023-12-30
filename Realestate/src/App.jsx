@@ -2,7 +2,7 @@ import React from "react"
 
 import { BrowserRouter,Route,Routes } from "react-router-dom";
 
-import { Home, About, SignIn, SignUp, Profile, CreateListing,UpdateListing } from "./pages";
+import { Home, About, SignIn, SignUp, Profile, CreateListing,UpdateListing,Listing } from "./pages";
 import Header from "./components/Header";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -15,6 +15,7 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/listing/:id" element={<Listing />} />
         <Route element={<PrivateRoute />} >
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-listing" element={<CreateListing />} />

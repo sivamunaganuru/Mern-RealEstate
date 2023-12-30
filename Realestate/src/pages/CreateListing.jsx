@@ -159,7 +159,7 @@ const CreateListing = () => {
             //     imageUrls : []
             // });
             dispatch(fileUploadSuccess("Listing Created Successfully"));
-            navigate(`/listing/${res.data.listing._id}`);
+            setTimeout(()=>navigate(`/listing/${res.data.listing._id}`),2000);
         }).catch((err) => {
             console.log(err.response.data);
             dispatch(fileUploadFailure(err.response.data.message || 'Unable to Create Listing,Try Again'));

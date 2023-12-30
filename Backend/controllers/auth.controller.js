@@ -131,4 +131,21 @@ const signout = async (req, res,next) => {
         next(errorHandler(500,"Internal Server Error: Cannot Logout"));
     }
 }
-export { signup, signin,googleSignup,deleteAccount,updateAccount,signout };
+
+const getUser = async (req, res,next) => {
+    const { id } = req.params;
+    try{
+        const userdata = await User.findById(id);
+        if(userdata){
+            const { password:confidential, ...others } = userdata._doc;
+            res.status(200).json(others);
+            
+        }else{
+            return next(errorHandler(404,"User not found"));
+        }
+    }
+    catch(error){
+        next(errorHandler(500,"Internal Server Error: Cannot Get User"));
+    }
+}
+export { signup, signin,googleSignup,deleteAccount,updateAccount,signout,getUser };

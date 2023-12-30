@@ -187,7 +187,7 @@ const UpdateListing = () => {
             //     imageUrls : []
             // });
             dispatch(fileUploadSuccess("Listing Created Successfully"));
-            navigate(`/listing/${res.data.listing._id}`);
+            setTimeout(()=>navigate(`/listing/${res.data.listing._id}`),2000);
         }).catch((err) => {
             console.log(err.response.data);
             dispatch(fileUploadFailure(err.response.data.message || 'Unable to Create Listing,Try Again'));
@@ -375,7 +375,7 @@ const UpdateListing = () => {
                 <button className="border border-gray-400 p-3 rounded-lg 
                     uppercase bg-slate-700 text-white w-full max-w-md mx-auto
                     hover:opacity-85 disabled:opacity-70" onClick={handleSubmit}
-                    disabled={filesuploading}>{filesuploading ? <Spinner/> : "Update listing"}</button>
+                    disabled={filesuploading}>{filesuploading ? <Spinner/> : "Update  listing"}</button>
             </div>
             
         </form>    
