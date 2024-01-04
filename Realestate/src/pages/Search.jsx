@@ -17,6 +17,7 @@ const Search = () => {
     const [listings, setListings] = useState([]);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [showMore, setShowMore] = useState(true);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -39,10 +40,14 @@ const Search = () => {
         fetchListings();
     },[window.location.search]);
     
-    const fetchListings = async () => {
+    const fetchListings = async (startindex) => {
         try{
             setLoading(true);
             const urlParams = new URLSearchParams(window.location.search);
+            console.log(startindex);
+            if(startindex){
+                urlParams.set('startIndex',startindex);
+            }
             axios({
                 method : 'GET',
                 url : `/api/listing/get-listings?${urlParams.toString()}`,
@@ -170,6 +175,12 @@ const Search = () => {
                 {!loading && listings.length > 0 && listings.map(listing => (
                     <ListingComponent listing={listing} key={listing._id} />
                 ))}
+            </div>
+            <div className='flex justify-center items-center gap-3'>
+                {showMore && listings.length > 0 && <button className='p-3 bg-slate-700 text-white rounded-lg uppercase
+                hover:opacity-75' onClick={()=>fetchListings(listings.length)}>Show More</button>}
+                {/* {listings.length > 0 && <button className='p-3 bg-slate-700 text-white rounded-lg uppercase
+                hover:opacity-75' onClick={()=>setShowMore(!showMore)}>{showMore ? 'Show Less' : 'Show More'}</button>} */}
             </div>
         </div>
     </div>
