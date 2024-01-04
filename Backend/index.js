@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
 import listingRoute from "./routes/listing.route.js";
+import path from "path";
+
+const __dirname = path.resolve();
+
 
 dotenv.config();
 mongoose.connect(process.env.MONGO, {
@@ -38,6 +42,11 @@ app.listen(port, () => {
 
 app.use("/", authRoute);
 app.use("/listing", listingRoute);
+
+app.use(Express.static(path.join(__dirname, '/Realestate/dist');
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/Realestate/dist/index.html'));
+});
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
