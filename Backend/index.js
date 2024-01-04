@@ -43,7 +43,7 @@ app.listen(port, () => {
 app.use("/", authRoute);
 app.use("/listing", listingRoute);
 
-app.use(Express.static(path.join(__dirname, '/Realestate/dist');
+app.use(Express.static(path.join(__dirname, '/Realestate/dist')));
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/Realestate/dist/index.html'));
 });
