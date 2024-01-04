@@ -40,8 +40,8 @@ app.listen(port, () => {
 }); 
 
 
-app.use("/", authRoute);
-app.use("/listing", listingRoute);
+app.use("/api", authRoute);
+app.use("/api/listing", listingRoute);
 
 app.use(Express.static(path.join(__dirname, '/Realestate/dist')));
 app.get('*', (req, res) => {

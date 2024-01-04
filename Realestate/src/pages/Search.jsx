@@ -169,10 +169,10 @@ const Search = () => {
         <div className='flex flex-col gap-2 w-full '>
             <h1 className='font-semibold text-3xl border-b text-slate-700 p-3'>Listing Results :</h1>
             <div className='flex flex-wrap gap-2 w-full pt-3'>
-                {!loading && listings.length === 0 &&
+                {!loading && listings && listings.length === 0 &&
                  <h1 className='font-semibold text-2xl text-slate-700 p-3'>No Listings Found</h1>}
                 {loading && <h1 className='font-semibold text-2xl text-slate-700 p-3'>Loading...</h1>}
-                {!loading && listings.length > 0 && listings.map(listing => (
+                {!loading && listings && listings.length > 0 && listings.map(listing => (
                     <ListingComponent listing={listing} key={listing._id} />
                 ))}
             </div>
