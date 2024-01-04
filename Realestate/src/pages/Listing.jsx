@@ -140,7 +140,7 @@ const Listing = () => {
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
               </li>
             </ul>
-            {currentUser && currentUser._id === listing.userRef && !showContact && (
+            {currentUser && currentUser._id !== listing.userRef && !showContact && (
             <button className='border p-3 bg-slate-700 text-white rounded-lg uppercase
             hover:opacity-70' onClick={()=>setShowContact(!showContact)}>Contact Landlord</button>
             )}
